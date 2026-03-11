@@ -1,26 +1,311 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-teko: var(--font-teko);
+  --font-exo2: var(--font-exo2);
+  --color-sky-top: #87ceeb;
+  --color-sky-mid: #b0e0e6;
+  --color-accent: #ff6b35;
+  --color-accent-hover: #e55a2b;
+  --color-text-dark: #1a1a2e;
+  --color-text-muted: #64748b;
+  --z-15: 15;
+  --z-25: 25;
+  --z-35: 35;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Smooth scroll fallback ─────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Base ───────────────────────────────────────── */
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: var(--font-exo2), sans-serif;
+}
+
+/* ── Nav link hover ─────────────────────────────── */
+
+.nav-link {
+  position: relative;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-exo2), sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  padding: 4px 0;
+  transition:
+    color 250ms ease,
+    transform 250ms ease;
+  cursor: pointer;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #ff6b35;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 300ms ease;
+}
+
+.nav-link:hover {
+  color: #ff6b35;
+  transform: translateY(-2px);
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* ── Nav logo hover ─────────────────────────────── */
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 250ms ease;
+}
+
+.nav-logo:hover {
+  transform: scale(1.05);
+}
+
+.nav-logo-icon {
+  transition: transform 300ms ease;
+}
+
+.nav-logo:hover .nav-logo-icon {
+  transform: rotate(10deg);
+}
+
+.nav-logo-text {
+  font-family: var(--font-teko), sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #fff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: text-shadow 300ms ease;
+}
+
+.nav-logo:hover .nav-logo-text {
+  text-shadow: 0 0 12px rgba(255, 107, 53, 0.6);
+}
+
+/* ── CTA button hover ───────────────────────────── */
+
+.cta-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 48px;
+  background: #ff6b35;
+  color: #fff;
+  font-family: var(--font-exo2), sans-serif;
+  font-weight: 600;
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 250ms ease,
+    box-shadow 250ms ease,
+    background 250ms ease;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.35);
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.cta-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: none;
+}
+
+.cta-button:hover {
+  transform: scale(1.06);
+  background: #e55a2b;
+  box-shadow: 0 6px 30px rgba(255, 107, 53, 0.5);
+}
+
+.cta-button:hover::before {
+  animation: cta-shine 0.6s ease forwards;
+}
+
+@keyframes cta-shine {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── Snow wave (GSAP animated) ──────────────────── */
+
+.snow-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  pointer-events: none;
+}
+
+/* ── Hero title — icy 3D text ──────────────────── */
+
+.hero-title {
+  text-shadow:
+    0 1px 0 #cce0f0,
+    0 2px 0 #b8d4e8,
+    0 3px 0 #a4c8e0,
+    0 4px 0 #90bcd8,
+    0 5px 0 #7cb0d0,
+    0 6px 1px rgba(0, 0, 0, 0.1),
+    0 0 5px rgba(135, 206, 235, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.15),
+    0 3px 5px rgba(0, 0, 0, 0.1),
+    0 5px 10px rgba(0, 0, 0, 0.08),
+    0 10px 10px rgba(0, 0, 0, 0.05);
+  transition:
+    text-shadow 0.5s ease,
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: default;
+  pointer-events: auto;
+}
+
+/* ── Brush divider title hover ────────────────── */
+
+.brush-title {
+  transition: text-shadow 0.5s ease, transform 0.5s ease;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.brush-title:hover {
+  text-shadow:
+    0 1px 0 #e55a2b,
+    0 2px 0 #cc4f26,
+    0 3px 0 #b34421,
+    0 4px 0 #99391c,
+    0 5px 0 #802e17,
+    0 6px 1px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(255, 107, 53, 0.5),
+    0 0 40px rgba(255, 107, 53, 0.25),
+    0 5px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.hero-title:hover {
+  text-shadow:
+    0 1px 0 #cce0f0,
+    0 2px 0 #b8d4e8,
+    0 3px 0 #a4c8e0,
+    0 4px 0 #90bcd8,
+    0 5px 0 #7cb0d0,
+    0 6px 1px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(135, 206, 235, 0.5),
+    0 0 40px rgba(135, 206, 235, 0.25),
+    0 0 60px rgba(135, 206, 235, 0.12),
+    0 5px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* ── Snow wave element ─────────────────────────── */
+
+.snow-wave-element {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 120%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 20%,
+    rgba(255, 255, 255, 0.85) 45%,
+    rgba(255, 255, 255, 0.85) 55%,
+    rgba(255, 255, 255, 0.5) 80%,
+    transparent 100%
+  );
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== COURSES SECTION ===== */
+
+.courses-section {
+  position: relative;
+  background: #0a0a1a;
+  overflow: visible;
+}
+
+.course-card {
+  will-change: transform, opacity;
+  transition: filter 0.3s ease;
+}
+
+.course-card:hover {
+  filter: brightness(1.05);
+}
+
+.courses-progress {
+  transition: opacity 0.3s ease;
+}
+
+.courses-progress-bar {
+  transition: none !important;
+  will-change: width;
+}
+
+/* ===== SCHEDULE TABLE ===== */
+
+.schedule-cell:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 15px var(--cell-glow, rgba(135,206,235,0.2));
+}
+
+.schedule-cell:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* ── Reduced motion ─────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
