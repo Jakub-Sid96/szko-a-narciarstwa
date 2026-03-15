@@ -81,6 +81,28 @@ const scheduleData: Record<string, Record<string, number>> = {
   "16:00": { "Poniedziałek": 3, "Piątek": 3, "Sobota": 3, "Niedziela": 1 },
 };
 
+function SnowDivider({ position, flip, zIndex = 40, className = '' }: {
+  position: 'top' | 'bottom';
+  flip?: boolean;
+  zIndex?: number;
+  className?: string;
+}) {
+  return (
+    <div className={`snow-divider-${position} ${className}`} style={{
+      position: 'absolute',
+      [position]: 0, left: 0, right: 0,
+      zIndex, pointerEvents: 'none' as const,
+      transform: flip ? 'scaleY(-1)' : undefined,
+    }}>
+      <img src="/przejscie-removebg-preview.png" alt="" style={{
+        width: '100%',
+        height: 'auto',
+        display: 'block',
+      }} />
+    </div>
+  );
+}
+
 function CourseCard({ course }: { course: typeof courses[number] }) {
   const isLeft = course.side === "left";
 
@@ -719,44 +741,61 @@ export default function Home() {
 
     const scheduleTriggers: ScrollTrigger[] = [];
 
-    // 1) Legend fade in
-    const legendAnim = gsap.from('.schedule-legend', {
-      opacity: 0, y: 20, duration: 0.6, ease: "power2.out",
+    // 1) Title + subtitle — toggleActions, fires once
+    const titleAnim = gsap.to('.schedule-snow-text', {
+      opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
       scrollTrigger: {
         trigger: section,
-        start: "10% top",
-        toggleActions: "play none none reverse",
+        start: "top 90%",
+        toggleActions: "play none none none",
+      }
+    });
+    if (titleAnim.scrollTrigger) scheduleTriggers.push(titleAnim.scrollTrigger);
+
+    // 2) Legend — toggleActions, slight delay
+    const legendAnim = gsap.to('.schedule-legend', {
+      opacity: 1, y: 0, duration: 0.6, delay: 0.2, ease: "power2.out",
+      scrollTrigger: {
+        trigger: section,
+        start: "top 90%",
+        toggleActions: "play none none none",
       }
     });
     if (legendAnim.scrollTrigger) scheduleTriggers.push(legendAnim.scrollTrigger);
 
-    // 4) Table scale + fade in
-    const tableAnim = gsap.from('.schedule-table', {
-      opacity: 0, y: 30, scale: 0.97, duration: 0.8, ease: "power3.out",
+    // 3) Table rows — scrub-driven, row by row
+    const headerRow = section.querySelector('.schedule-header-row');
+    const rows = gsap.utils.toArray('.schedule-row');
+
+    gsap.set([headerRow, ...rows], { opacity: 0, y: 40 });
+
+    const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
-        start: "10% top",
-        toggleActions: "play none none reverse",
+        start: "top 85%",
+        end: "bottom bottom",
+        scrub: 0.6,
       }
     });
-    if (tableAnim.scrollTrigger) scheduleTriggers.push(tableAnim.scrollTrigger);
 
-    // 5) Cell stagger animation
-    const cells = section.querySelectorAll('.schedule-cell');
-    const cellsAnim = gsap.from(cells, {
-      opacity: 0, scale: 0.8, y: 10,
-      duration: 0.4,
-      stagger: { each: 0.03, from: "start" },
-      ease: "back.out(1.4)",
+    tl.to(headerRow, { opacity: 1, y: 0, duration: 0.08 });
+    tl.to(rows, { opacity: 1, y: 0, duration: 0.08, stagger: 0.06 });
+
+    if (tl.scrollTrigger) scheduleTriggers.push(tl.scrollTrigger);
+
+    // 4) Optional parallax on top snow divider
+    const parallaxAnim = gsap.to('.snow-divider-top', {
+      y: -20,
       scrollTrigger: {
         trigger: section,
-        start: "12% top",
-        toggleActions: "play none none reverse",
+        start: 'top bottom',
+        end: 'top top',
+        scrub: true,
       }
     });
-    if (cellsAnim.scrollTrigger) scheduleTriggers.push(cellsAnim.scrollTrigger);
+    if (parallaxAnim.scrollTrigger) scheduleTriggers.push(parallaxAnim.scrollTrigger);
 
-    // Snowfall particles
+    // 5) Snowfall particles
     const snowfallContainer = section.querySelector('.schedule-snowfall');
     if (snowfallContainer) {
       for (let i = 0; i < 40; i++) {
@@ -822,9 +861,10 @@ export default function Home() {
     }
 
     return () => {
+      tl.kill();
+      scheduleTriggers.forEach((t) => t.kill());
       const container = document.querySelector('.schedule-snowfall');
       if (container) container.innerHTML = '';
-      scheduleTriggers.forEach((t) => t.kill());
     };
   }, []);
 
@@ -1253,6 +1293,7 @@ export default function Home() {
           {/* Color legend */}
           <div className="schedule-legend" style={{
             display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap', justifyContent: 'center',
+            opacity: 0, transform: 'translateY(20px)',
           }}>
             {scheduleCourses.map((sc) => (
               <div key={sc.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1289,7 +1330,7 @@ export default function Home() {
 
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '3px', background: 'rgba(255,255,255,0.15)' }}>
                 <thead>
-                  <tr>
+                  <tr className="schedule-header-row" style={{ opacity: 0, transform: 'translateY(40px)' }}>
                     <th style={{
                       padding: '14px 10px', background: 'rgba(255,255,255,0.3)',
                       color: '#1A3A5C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
@@ -1306,7 +1347,7 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {scheduleTimes.map(time => (
-                    <tr key={time}>
+                    <tr key={time} className="schedule-row" style={{ opacity: 0, transform: 'translateY(40px)' }}>
                       <td style={{
                         padding: '10px', color: '#1A3A5C', fontWeight: 700,
                         fontFamily: 'var(--font-teko), sans-serif', fontSize: '1rem',
@@ -1369,77 +1410,58 @@ export default function Home() {
 
         </div>
 
-        {/* Z-40: Snow overlay + text (disappears on scroll) */}
-        <div className="schedule-snow" style={{
+        {/* Z-40: Snow overlay top */}
+        <SnowDivider position="top" zIndex={40} />
+
+        {/* Schedule title — extracted from snow */}
+        <div className="schedule-snow-text" style={{
           position: 'absolute',
-          top: 0, left: 0, right: 0,
-          zIndex: 40,
-          pointerEvents: 'none',
+          top: '4%', left: 0, right: 0,
+          textAlign: 'center', zIndex: 41,
+          opacity: 0, transform: 'translateY(30px)',
         }}>
-          <img
-            src="/przejscie-removebg-preview.png"
-            alt=""
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              transform: 'scaleY(0.8)',
-              transformOrigin: 'top center',
-            }}
-          />
-          {/* Title on snow */}
-          <div className="schedule-snow-text" style={{
-            position: 'absolute',
-            top: '8%', left: 0, right: 0,
-            textAlign: 'center', zIndex: 41,
+          <p style={{
+            fontFamily: 'var(--font-exo2), sans-serif',
+            fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase',
+            letterSpacing: '0.25em', color: '#FF6B35', marginBottom: '8px',
           }}>
-            <p style={{
-              fontFamily: 'var(--font-exo2), sans-serif',
-              fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase',
-              letterSpacing: '0.25em', color: '#FF6B35', marginBottom: '8px',
-            }}>
-              ▸ Harmonogram
-            </p>
-            <h2 style={{
-              fontFamily: 'var(--font-teko), sans-serif',
-              fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.08em', color: '#FF6B35', lineHeight: 1, marginBottom: '10px',
-              textShadow: '0 1px 0 #e55a2b, 0 2px 0 #cc4f26, 0 3px 0 #b34421, 0 4px 0 #99391c, 0 5px 0 #802e17, 0 6px 1px rgba(0,0,0,0.15), 0 0 5px rgba(255,107,53,0.3), 0 1px 3px rgba(0,0,0,0.2)',
-            }}>
-              Harmonogram zajęć
-            </h2>
-            <p style={{
-              fontFamily: 'var(--font-exo2), sans-serif',
-              fontSize: 'clamp(0.85rem, 1.5vw, 1.05rem)', fontWeight: 400, color: '#1A1A2E',
-              maxWidth: '450px', margin: '0 auto',
-            }}>
-              Zaplanuj swój tydzień na stoku — zajęcia codziennie
-            </p>
-          </div>
+            ▸ Harmonogram
+          </p>
+          <h2 style={{
+            fontFamily: 'var(--font-teko), sans-serif',
+            fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.08em', color: '#FF6B35', lineHeight: 1, marginBottom: '10px',
+            textShadow: '0 1px 0 #e55a2b, 0 2px 0 #cc4f26, 0 3px 0 #b34421, 0 4px 0 #99391c, 0 5px 0 #802e17, 0 6px 1px rgba(0,0,0,0.15), 0 0 5px rgba(255,107,53,0.3), 0 1px 3px rgba(0,0,0,0.2)',
+          }}>
+            Harmonogram zajęć
+          </h2>
+          <p style={{
+            fontFamily: 'var(--font-exo2), sans-serif',
+            fontSize: 'clamp(0.85rem, 1.5vw, 1.05rem)', fontWeight: 400, color: '#1A1A2E',
+            maxWidth: '450px', margin: '0 auto',
+          }}>
+            Zaplanuj swój tydzień na stoku — zajęcia codziennie
+          </p>
         </div>
 
         {/* Spadający śnieg — cząsteczki */}
         <div className="schedule-snowfall absolute inset-0 pointer-events-none" style={{ zIndex: 35 }} />
 
         {/* Z-40: Snow bottom (mirrored) */}
-        <div className="schedule-snow-bottom" style={{
+        {/* Z-40: Snow bottom (mirrored) — dedykowany niższy dla harmonogramu */}
+        <div className="snow-divider-bottom" style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
-          zIndex: 40,
-          pointerEvents: 'none',
+          zIndex: 40, pointerEvents: 'none' as const,
           transform: 'scaleY(-1)',
         }}>
-          <img
-            src="/przejscie-removebg-preview.png"
-            alt=""
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              transform: 'scaleY(0.8)',
-              transformOrigin: 'top center',
-            }}
-          />
+          <img src="/przejscie-removebg-preview.png" alt="" style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+            transform: 'scaleY(0.8)',
+            transformOrigin: 'top center',
+          }} />
         </div>
 
       </div>
