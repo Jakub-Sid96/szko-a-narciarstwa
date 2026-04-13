@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -113,7 +113,7 @@ function CourseCard({ course }: { course: typeof courses[number] }) {
         ${isLeft ? "md:left-[5%] md:translate-x-0" : "md:left-auto md:right-[5%] md:translate-x-0"}
       `}
       style={{
-        width: "min(90vw, 480px)",
+        width: "min(88vw, 480px)",
         opacity: 0,
       }}
     >
@@ -271,6 +271,21 @@ export default function Home() {
   const coursesRef = useRef<HTMLElement>(null);
   const scheduleRef = useRef<HTMLElement>(null);
   const footerRef = useRef<HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // === LENIS SMOOTH SCROLL ===
   useEffect(() => {
@@ -533,6 +548,7 @@ export default function Home() {
     const section = coursesRef.current;
     if (!section) return;
 
+    const mobile = window.innerWidth < 768;
     const cards = section.querySelectorAll('.course-card') as NodeListOf<HTMLElement>;
     const totalCards = cards.length;
     const triggers: ScrollTrigger[] = [];
@@ -540,12 +556,16 @@ export default function Home() {
     // Ustaw WSZYSTKIE karty jako niewidoczne na start
     cards.forEach((card) => {
       const isLeft = card.classList.contains('card-left');
-      gsap.set(card, {
-        opacity: 0,
-        x: isLeft ? -120 : 120,
-        scale: 0.88,
-        rotation: isLeft ? -4 : 4,
-      });
+      if (mobile) {
+        gsap.set(card, { opacity: 0, xPercent: -50, yPercent: -50, scale: 0.95, rotation: 0 });
+      } else {
+        gsap.set(card, {
+          opacity: 0,
+          x: isLeft ? -120 : 120,
+          scale: 0.88,
+          rotation: isLeft ? -4 : 4,
+        });
+      }
     });
 
     // Nagłówek — lepsza animacja z parallaxem
@@ -597,7 +617,11 @@ export default function Home() {
               const blurVal = 4 * (1 - eased);
               el.style.opacity = String(eased);
               el.style.filter = `blur(${blurVal}px)`;
-              el.style.transform = `translateX(${(isLeft ? -120 : 120) * (1 - eased)}px) translateY(-50%) scale(${0.88 + 0.12 * eased}) rotate(${(isLeft ? -4 : 4) * (1 - eased)}deg)`;
+              if (mobile) {
+                el.style.transform = `translateX(-50%) translateY(-50%) scale(${0.95 + 0.05 * eased})`;
+              } else {
+                el.style.transform = `translateX(${(isLeft ? -120 : 120) * (1 - eased)}px) translateY(-50%) scale(${0.88 + 0.12 * eased}) rotate(${(isLeft ? -4 : 4) * (1 - eased)}deg)`;
+              }
               // Stagger wewnętrznych elementów
               innerEls.forEach((inner, idx) => {
                 const delay = idx * 0.06;
@@ -613,7 +637,11 @@ export default function Home() {
               const blurVal = 3 * eased;
               el.style.opacity = String(1 - eased);
               el.style.filter = `blur(${blurVal}px)`;
-              el.style.transform = `translateX(${(isLeft ? -80 : 80) * eased}px) translateY(${-50 - 30 * eased}%) scale(${1 - 0.08 * eased}) rotate(0deg)`;
+              if (mobile) {
+                el.style.transform = `translateX(-50%) translateY(${-50 - 15 * eased}%) scale(${1 - 0.05 * eased})`;
+              } else {
+                el.style.transform = `translateX(${(isLeft ? -80 : 80) * eased}px) translateY(${-50 - 30 * eased}%) scale(${1 - 0.08 * eased}) rotate(0deg)`;
+              }
               innerEls.forEach((inner) => {
                 inner.style.opacity = '1';
                 inner.style.transform = 'translateY(0)';
@@ -624,7 +652,11 @@ export default function Home() {
               const microY = Math.sin(visibleProgress * Math.PI) * 5;
               el.style.opacity = '1';
               el.style.filter = 'blur(0px)';
-              el.style.transform = `translateX(0) translateY(calc(-50% + ${microY}px)) scale(1) rotate(0deg)`;
+              if (mobile) {
+                el.style.transform = `translateX(-50%) translateY(-50%) scale(1)`;
+              } else {
+                el.style.transform = `translateX(0) translateY(calc(-50% + ${microY}px)) scale(1) rotate(0deg)`;
+              }
               innerEls.forEach((inner) => {
                 inner.style.opacity = '1';
                 inner.style.transform = 'translateY(0)';
@@ -633,7 +665,11 @@ export default function Home() {
           } else {
             el.style.opacity = '0';
             el.style.filter = 'blur(4px)';
-            el.style.transform = `translateX(${isLeft ? -120 : 120}px) translateY(-50%) scale(0.88) rotate(${(isLeft ? -4 : 4)}deg)`;
+            if (mobile) {
+              el.style.transform = `translateX(-50%) translateY(-50%) scale(0.95)`;
+            } else {
+              el.style.transform = `translateX(${isLeft ? -120 : 120}px) translateY(-50%) scale(0.88) rotate(${(isLeft ? -4 : 4)}deg)`;
+            }
             innerEls.forEach((inner) => {
               inner.style.opacity = '0';
               inner.style.transform = 'translateY(8px)';
@@ -719,46 +755,6 @@ export default function Home() {
       if (textOut.scrollTrigger) triggers.push(textOut.scrollTrigger);
     }
 
-    // Śnieg od dołu — opacity + y animation
-    const snowBottom = section.querySelector('.courses-snow-bottom') as HTMLElement;
-    if (snowBottom) {
-      console.log("✅ Snow bottom found, setting up ScrollTrigger");
-
-      gsap.set(snowBottom, { y: 80, opacity: 0 });
-
-      const snowTween = gsap.to(snowBottom, {
-        opacity: 1,
-        y: 0,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: section,
-          start: "45% top",
-          end: "70% top",
-          scrub: 1,
-        }
-      });
-      triggers.push(snowTween.scrollTrigger!);
-    } else {
-      console.log("❌ Snow bottom NOT found!");
-    }
-
-    // Biały pas pod śniegiem — animacja wjazdu
-    const snowFill = section.querySelector('.courses-snow-fill') as HTMLElement;
-    if (snowFill) {
-      gsap.set(snowFill, { y: 80, opacity: 0 });
-      const fillTween = gsap.to(snowFill, {
-        opacity: 1, y: 0,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: section,
-          start: "45% top",
-          end: "70% top",
-          scrub: 1,
-        }
-      });
-      triggers.push(fillTween.scrollTrigger!);
-    }
-
     return () => {
       triggers.forEach((t) => t.kill());
     };
@@ -794,25 +790,37 @@ export default function Home() {
     });
     if (legendAnim.scrollTrigger) scheduleTriggers.push(legendAnim.scrollTrigger);
 
-    // 3) Table rows — scrub-driven, row by row
+    // 3) Table rows — scrub-driven on desktop, single fade on mobile
+    const mobile = window.innerWidth < 768;
     const headerRow = section.querySelector('.schedule-header-row');
     const rows = gsap.utils.toArray('.schedule-row');
 
-    gsap.set([headerRow, ...rows], { opacity: 0, y: 40 });
-
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        start: "top 85%",
-        end: "bottom bottom",
-        scrub: 0.6,
-      }
-    });
-
-    tl.to(headerRow, { opacity: 1, y: 0, duration: 0.08 });
-    tl.to(rows, { opacity: 1, y: 0, duration: 0.08, stagger: 0.06 });
-
-    if (tl.scrollTrigger) scheduleTriggers.push(tl.scrollTrigger);
+    if (mobile) {
+      gsap.set([headerRow, ...rows], { opacity: 0, y: 20 });
+      const mobileTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+      mobileTl.to(headerRow, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
+      mobileTl.to(rows, { opacity: 1, y: 0, duration: 0.3, stagger: 0.05, ease: 'power2.out' }, '-=0.2');
+      if (mobileTl.scrollTrigger) scheduleTriggers.push(mobileTl.scrollTrigger);
+    } else {
+      gsap.set([headerRow, ...rows], { opacity: 0, y: 40 });
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'bottom bottom',
+          scrub: 0.6,
+        },
+      });
+      tl.to(headerRow, { opacity: 1, y: 0, duration: 0.08 });
+      tl.to(rows, { opacity: 1, y: 0, duration: 0.08, stagger: 0.06 });
+      if (tl.scrollTrigger) scheduleTriggers.push(tl.scrollTrigger);
+    }
 
     // 4) Optional parallax on top snow divider
     const parallaxAnim = gsap.to('.snow-divider-top', {
@@ -892,8 +900,11 @@ export default function Home() {
     }
 
     return () => {
-      tl.kill();
-      scheduleTriggers.forEach((t) => t.kill());
+      scheduleTriggers.forEach((t) => {
+        const tween = t.animation;
+        if (tween) tween.kill();
+        t.kill();
+      });
       const container = document.querySelector('.schedule-snowfall');
       if (container) container.innerHTML = '';
     };
@@ -1174,7 +1185,7 @@ export default function Home() {
           <span className="nav-logo-text">SKIMASTER</span>
         </a>
 
-        {/* Links */}
+        {/* Links — desktop */}
         <div className="hidden md:flex items-center gap-[clamp(16px,2.5vw,32px)]">
           {NAV_LINKS.map((link) => (
             <a key={link} className="nav-link" href="#">
@@ -1182,7 +1193,49 @@ export default function Home() {
             </a>
           ))}
         </div>
+
+        {/* Hamburger — mobile */}
+        <button
+          type="button"
+          className="hero-hamburger md:hidden"
+          aria-label="Otwórz menu"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
+          onClick={() => setMenuOpen(true)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </nav>
+
+      {/* Mobile menu overlay */}
+      <div
+        id="mobile-menu"
+        className={`mobile-menu md:hidden ${menuOpen ? 'is-open' : ''}`}
+        aria-hidden={!menuOpen}
+      >
+        <button
+          type="button"
+          className="mobile-menu-close"
+          aria-label="Zamknij menu"
+          onClick={() => setMenuOpen(false)}
+        >
+          ×
+        </button>
+        <nav className="mobile-menu-links" aria-label="Mobile navigation">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link}
+              href="#"
+              className="mobile-menu-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              {link}
+            </a>
+          ))}
+        </nav>
+      </div>
     </div>
     </div>
 
@@ -1273,18 +1326,19 @@ export default function Home() {
               width: '100%',
               height: 'auto',
               display: 'block',
-              transform: 'scaleY(1.5)',
+              transform: isMobile ? 'scaleY(2.5)' : 'scaleY(1.5)',
               transformOrigin: 'top center',
             }}
           />
           <div className="snow-cover-text" style={{
             position: 'absolute',
-            top: '10%',
+            top: isMobile ? '5%' : '10%',
             left: 0,
             right: 0,
             textAlign: 'center',
             zIndex: 41,
             pointerEvents: 'auto',
+            padding: isMobile ? '0 16px' : undefined,
           }}>
             <p className="brush-label" style={{
               fontFamily: 'var(--font-exo2), sans-serif',
@@ -1293,7 +1347,7 @@ export default function Home() {
             }}>▸ Oferta kursów</p>
             <h2 className="brush-title" style={{
               fontFamily: 'var(--font-teko), sans-serif',
-              fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, textTransform: 'uppercase',
+              fontSize: isMobile ? 'clamp(2rem, 8vw, 3rem)' : 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: '0.08em', color: '#FF6B35', lineHeight: 1, marginBottom: '12px', opacity: 0,
               textShadow: `0 1px 0 #e55a2b, 0 2px 0 #cc4f26, 0 3px 0 #b34421, 0 4px 0 #99391c, 0 5px 0 #802e17, 0 6px 1px rgba(0,0,0,0.15), 0 0 5px rgba(255,107,53,0.3), 0 1px 3px rgba(0,0,0,0.2), 0 3px 5px rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.05)`,
             }}>Wybierz swój kurs</h2>
@@ -1305,46 +1359,48 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Śnieg od dołu — pojawia się na końcu scrollu */}
-        <div className="courses-snow-bottom" style={{
-          position: 'absolute',
-          bottom: '-2px',
-          left: 0,
-          right: 0,
-          zIndex: 45,
-          pointerEvents: 'none',
-          opacity: 0,
-        }}>
-          <img
-            src="/przejscie-removebg-preview.png"
-            alt=""
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              transform: 'rotate(180deg)',
-            }}
-          />
-        </div>
+      </div>
+      {/* ^^^ koniec sticky div z overflow-hidden ^^^ */}
 
-        {/* Biały pas pod śniegiem — łączy z harmonogramem */}
-        <div className="courses-snow-fill" style={{
-          position: 'absolute',
-          bottom: '-50px',
-          left: 0,
-          right: 0,
-          height: '60px',
-          background: 'white',
-          zIndex: 44,
-          pointerEvents: 'none',
-          opacity: 0,
+      {/* Śnieg na dole sekcji kursów — kopia wzorca z harmonogramu */}
+      <div className="courses-snow-bottom" style={{
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
+        zIndex: 40, pointerEvents: 'none',
+        transform: 'scaleY(-1)',
+      }}>
+        <img src="/przejscie-removebg-preview.png" alt="" style={{
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          transform: 'scaleY(0.8)',
+          transformOrigin: 'top center',
         }} />
       </div>
+
+      {/* Biały gradient na dole — przejście do harmonogramu */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
+        height: '120px',
+        background: 'linear-gradient(0deg, white 0%, white 40%, transparent 100%)',
+        zIndex: 45,
+        pointerEvents: 'none',
+      }} />
     </section>
 
     {/* ═══ SCHEDULE SECTION ═══ */}
-    <section ref={scheduleRef} className="schedule-section relative" style={{ height: '250vh', position: 'relative', zIndex: 5 }}>
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+    <section
+      ref={scheduleRef}
+      className="schedule-section relative"
+      style={{
+        height: isMobile ? 'auto' : '250vh',
+        minHeight: isMobile ? '100vh' : undefined,
+        position: 'relative',
+        zIndex: 5,
+      }}
+    >
+      <div className={isMobile ? 'relative w-full overflow-hidden' : 'sticky top-0 h-screen w-full overflow-hidden'}>
 
         {/* Biały gradient na górze — łączy ze śniegiem z kursów */}
         <div style={{
@@ -1383,11 +1439,14 @@ export default function Home() {
         }} />
 
         {/* Z-10: Content — header + legend + table */}
-        <div className="schedule-content absolute inset-0 flex flex-col justify-center items-center px-[3%]" style={{ zIndex: 10 }}>
+        <div
+          className={`schedule-content flex flex-col justify-center items-center px-[3%] ${isMobile ? 'relative w-full py-20' : 'absolute inset-0'}`}
+          style={{ zIndex: 10 }}
+        >
 
           {/* Color legend */}
-          <div className="schedule-legend" style={{
-            display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap', justifyContent: 'center',
+          <div className="schedule-legend hidden md:flex" style={{
+            gap: '16px', marginBottom: '16px', flexWrap: 'wrap', justifyContent: 'center',
             opacity: 0, transform: 'translateY(20px)',
           }}>
             {scheduleCourses.map((sc) => (
@@ -1524,13 +1583,13 @@ export default function Home() {
           </p>
           <h2 style={{
             fontFamily: 'var(--font-teko), sans-serif',
-            fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, textTransform: 'uppercase',
+            fontSize: isMobile ? 'clamp(1.8rem, 7vw, 2.5rem)' : 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, textTransform: 'uppercase',
             letterSpacing: '0.08em', color: '#FF6B35', lineHeight: 1, marginBottom: '10px',
             textShadow: '0 1px 0 #e55a2b, 0 2px 0 #cc4f26, 0 3px 0 #b34421, 0 4px 0 #99391c, 0 5px 0 #802e17, 0 6px 1px rgba(0,0,0,0.15), 0 0 5px rgba(255,107,53,0.3), 0 1px 3px rgba(0,0,0,0.2)',
           }}>
             Harmonogram zajęć
           </h2>
-          <p style={{
+          <p className="hidden md:block" style={{
             fontFamily: 'var(--font-exo2), sans-serif',
             fontSize: 'clamp(0.85rem, 1.5vw, 1.05rem)', fontWeight: 400, color: '#1A1A2E',
             maxWidth: '450px', margin: '0 auto',
@@ -1638,7 +1697,7 @@ export default function Home() {
           style={{
             fontFamily: 'var(--font-teko), sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(6rem, 14vw, 12rem)',
+            fontSize: 'clamp(4rem, 16vw, 12rem)',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
             color: '#FF6B35',
@@ -1826,6 +1885,7 @@ export default function Home() {
             ul. Stokowa 12, 34-500 Zakopane
           </div>
           <div
+            className="footer-contact-line"
             style={{
               marginTop: '10px',
               fontFamily: 'var(--font-exo2), sans-serif',
@@ -1835,7 +1895,7 @@ export default function Home() {
             <a className="footer-contact-link" href="tel:+48123456789">
               +48 123 456 789
             </a>
-            <span style={{ color: '#FF6B35', opacity: 0.3, margin: '0 10px' }}>·</span>
+            <span className="footer-contact-sep" style={{ color: '#FF6B35', opacity: 0.3, margin: '0 10px' }}>·</span>
             <a className="footer-contact-link" href="mailto:kontakt@skimaster.pl">
               kontakt@skimaster.pl
             </a>
