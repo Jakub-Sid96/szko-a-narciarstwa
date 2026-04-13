@@ -325,6 +325,75 @@ body {
   transition-duration: 0.1s;
 }
 
+/* ===== FOOTER ===== */
+
+.footer-section {
+  font-family: var(--font-exo2), sans-serif;
+}
+
+.footer-nav-link {
+  color: #1A3A5C;
+  opacity: 0.4;
+  text-decoration: none;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.footer-nav-link:hover {
+  color: #FF6B35;
+  opacity: 1;
+}
+
+.footer-nav-sep {
+  color: #1A3A5C;
+  opacity: 0.3;
+  padding: 0 6px;
+  user-select: none;
+}
+
+.footer-hex {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              filter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.footer-hex:hover {
+  transform: translateY(-3px) scale(1.08) !important;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 53, 0.25));
+}
+
+.footer-hex polygon {
+  transition: fill-opacity 0.3s ease, stroke-opacity 0.3s ease;
+}
+
+.footer-hex:hover polygon {
+  fill-opacity: 0.15;
+  stroke-opacity: 0.5;
+}
+
+.footer-hex-icon {
+  transition: opacity 0.3s ease;
+}
+
+.footer-hex:hover .footer-hex-icon {
+  opacity: 1;
+}
+
+.footer-contact-link {
+  color: #FF6B35;
+  opacity: 0.5;
+  text-decoration: none;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.footer-contact-link:hover {
+  opacity: 1;
+  color: #E55A2B;
+}
+
+.footer-snowflake {
+  will-change: transform, opacity;
+}
+
 /* ── Reduced motion ─────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

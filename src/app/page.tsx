@@ -234,12 +234,43 @@ function CourseCard({ course }: { course: typeof courses[number] }) {
   );
 }
 
+const footerSnowflakes = [
+  // large accents (5)
+  { top: '6%',  left: '4%',  size: 68, opacity: 0.20, sw: 1.4, rot: -15 },
+  { top: '6%',  left: '92%', size: 64, opacity: 0.18, sw: 1.3, rot: 22 },
+  { top: '78%', left: '8%',  size: 70, opacity: 0.22, sw: 1.5, rot: -30 },
+  { top: '52%', left: '93%', size: 62, opacity: 0.17, sw: 1.3, rot: 40 },
+  { top: '88%', left: '82%', size: 58, opacity: 0.16, sw: 1.2, rot: -8 },
+  // medium scatter (10)
+  { top: '34%', left: '6%',  size: 34, opacity: 0.10, sw: 0.9, rot: 18 },
+  { top: '36%', left: '94%', size: 32, opacity: 0.09, sw: 0.8, rot: -22 },
+  { top: '48%', left: '14%', size: 36, opacity: 0.11, sw: 1.0, rot: 35 },
+  { top: '50%', left: '82%', size: 30, opacity: 0.08, sw: 0.8, rot: -40 },
+  { top: '62%', left: '8%',  size: 38, opacity: 0.12, sw: 1.0, rot: 12 },
+  { top: '64%', left: '88%', size: 32, opacity: 0.09, sw: 0.8, rot: -18 },
+  { top: '42%', left: '28%', size: 28, opacity: 0.07, sw: 0.7, rot: 25 },
+  { top: '42%', left: '72%', size: 30, opacity: 0.08, sw: 0.8, rot: -10 },
+  { top: '72%', left: '32%', size: 32, opacity: 0.10, sw: 0.8, rot: 50 },
+  { top: '72%', left: '66%', size: 28, opacity: 0.07, sw: 0.7, rot: -25 },
+  // small texture (9)
+  { top: '26%', left: '4%',  size: 18, opacity: 0.05, sw: 0.5, rot: 8 },
+  { top: '26%', left: '96%', size: 16, opacity: 0.04, sw: 0.4, rot: -12 },
+  { top: '90%', left: '32%', size: 16, opacity: 0.04, sw: 0.4, rot: 32 },
+  { top: '92%', left: '62%', size: 18, opacity: 0.05, sw: 0.5, rot: -28 },
+  { top: '56%', left: '40%', size: 14, opacity: 0.03, sw: 0.3, rot: 20 },
+  { top: '58%', left: '58%', size: 16, opacity: 0.04, sw: 0.4, rot: -5 },
+  { top: '82%', left: '48%', size: 14, opacity: 0.03, sw: 0.3, rot: 15 },
+  { top: '68%', left: '20%', size: 18, opacity: 0.05, sw: 0.5, rot: -35 },
+  { top: '68%', left: '78%', size: 20, opacity: 0.05, sw: 0.5, rot: 42 },
+];
+
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const burstVideoRef = useRef<HTMLVideoElement>(null);
   const coursesRef = useRef<HTMLElement>(null);
   const scheduleRef = useRef<HTMLElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
 
   // === LENIS SMOOTH SCROLL ===
   useEffect(() => {
@@ -868,6 +899,74 @@ export default function Home() {
     };
   }, []);
 
+  // === FOOTER — ScrollTrigger ===
+  useEffect(() => {
+    const section = footerRef.current;
+    if (!section) return;
+
+    console.log('🏔️ Footer ScrollTrigger init');
+
+    const footerTriggers: ScrollTrigger[] = [];
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 80%',
+        toggleActions: 'play none none none',
+      },
+    });
+
+    tl.to('.footer-snowflake', {
+      opacity: (_i: number, el: Element) => parseFloat(el.getAttribute('data-opacity') || '0.1'),
+      scale: 1,
+      rotation: (_i: number, el: Element) => parseFloat(el.getAttribute('data-rot') || '0'),
+      duration: 0.7,
+      stagger: 0.05,
+      ease: 'back.out(1.4)',
+    })
+    .to('.footer-title', {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      ease: 'power3.out',
+    }, '-=0.4')
+    .to('.footer-subtitle-wrap', {
+      opacity: 1,
+      duration: 0.6,
+      ease: 'power2.out',
+    }, '-=0.3')
+    .to('.footer-nav', {
+      opacity: 1,
+      duration: 0.5,
+      ease: 'power2.out',
+    }, '-=0.2')
+    .to('.footer-hex', {
+      opacity: 1,
+      scale: 1,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: 'back.out(1.7)',
+      clearProps: 'transform',
+    }, '-=0.2')
+    .to('.footer-contact', {
+      opacity: 1,
+      duration: 0.5,
+      ease: 'power2.out',
+    }, '-=0.3')
+    .to('.footer-copyright', {
+      opacity: 1,
+      duration: 0.5,
+      ease: 'power2.out',
+    }, '-=0.3');
+
+    if (tl.scrollTrigger) footerTriggers.push(tl.scrollTrigger);
+
+    return () => {
+      tl.kill();
+      footerTriggers.forEach((t) => t.kill());
+    };
+  }, []);
+
   return (
     <>
     <div className="hero-wrapper" style={{
@@ -1460,8 +1559,336 @@ export default function Home() {
           }} />
         </div>
 
+        {/* Biały gradient na dole — płynne przejście do footera */}
+        <div style={{
+          position: 'absolute',
+          bottom: 0, left: 0, right: 0,
+          height: '120px',
+          background: 'linear-gradient(0deg, white 0%, white 40%, transparent 100%)',
+          zIndex: 45,
+          pointerEvents: 'none',
+        }} />
+
       </div>
     </section>
+
+    {/* ═══ FOOTER ═══ */}
+    <footer
+      ref={footerRef}
+      className="footer-section relative"
+      style={{
+        background: '#FFFFFF',
+        paddingTop: '120px',
+        paddingBottom: '40px',
+        overflow: 'hidden',
+        position: 'relative',
+        zIndex: 10,
+        border: 'none',
+      }}
+    >
+      {/* Mountain outline decoration */}
+      <svg
+        className="footer-mountains pointer-events-none"
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '32%', zIndex: 1 }}
+        viewBox="0 0 1200 200"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M0 180 L120 90 L200 140 L320 50 L440 130 L560 70 L700 120 L820 40 L940 100 L1060 60 L1200 150 L1200 200 L0 200 Z"
+          fill="#ffffff"
+          fillOpacity="0.02"
+          stroke="#1A3A5C"
+          strokeOpacity="0.08"
+          strokeWidth="0.5"
+        />
+      </svg>
+
+      {/* Snowflake decorations */}
+      <div
+        className="footer-snowflakes pointer-events-none"
+        style={{ position: 'absolute', inset: 0, zIndex: 2 }}
+        aria-hidden="true"
+      >
+        {footerSnowflakes.map((sf, i) => (
+          <svg
+            key={i}
+            className="footer-snowflake"
+            data-opacity={sf.opacity}
+            data-rot={sf.rot}
+            viewBox="-30 -30 60 60"
+            width={sf.size}
+            height={sf.size}
+            fill="none"
+            stroke="#1A3A5C"
+            strokeWidth={sf.sw}
+            strokeLinecap="round"
+            style={{
+              position: 'absolute',
+              top: sf.top,
+              left: sf.left,
+              opacity: 0,
+              transform: 'rotate(0deg) scale(0)',
+              transformOrigin: 'center center',
+            }}
+          >
+            <line x1="-25" y1="0" x2="25" y2="0" />
+            <line x1="-12.5" y1="-21.65" x2="12.5" y2="21.65" />
+            <line x1="-12.5" y1="21.65" x2="12.5" y2="-21.65" />
+            {[0, 60, 120, 180, 240, 300].map((a) => (
+              <g key={a} transform={`rotate(${a})`}>
+                <line x1="18" y1="0" x2="22" y2="-4" />
+                <line x1="18" y1="0" x2="22" y2="4" />
+              </g>
+            ))}
+          </svg>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div
+        className="footer-content relative flex flex-col items-center text-center"
+        style={{ zIndex: 10, paddingLeft: '6%', paddingRight: '6%' }}
+      >
+        {/* SKIMASTER title */}
+        <h2
+          className="footer-title"
+          style={{
+            fontFamily: 'var(--font-teko), sans-serif',
+            fontWeight: 700,
+            fontSize: 'clamp(6rem, 14vw, 12rem)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: '#FF6B35',
+            lineHeight: 1,
+            margin: 0,
+            textShadow:
+              '0 2px 0 #e55a2b, 0 4px 0 #cc4f26, 0 6px 0 #b34421, 0 8px 0 #99391c, 0 10px 0 #802e17, 0 12px 2px rgba(0,0,0,0.1), 0 0 8px rgba(255,107,53,0.2), 0 2px 6px rgba(0,0,0,0.15)',
+            opacity: 0,
+            transform: 'translateY(50px)',
+          }}
+        >
+          SKIMASTER
+        </h2>
+
+        {/* Line + subtitle */}
+        <div className="footer-subtitle-wrap flex flex-col items-center" style={{ marginTop: '20px', opacity: 0 }}>
+          <div style={{ width: '280px', height: '1px', background: '#FF6B35', opacity: 0.2 }} />
+          <span
+            style={{
+              marginTop: '14px',
+              fontFamily: 'var(--font-exo2), sans-serif',
+              fontSize: '0.75rem',
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: '#FF6B35',
+              opacity: 0.6,
+            }}
+          >
+            Szkoła narciarska
+          </span>
+        </div>
+
+        {/* Navigation */}
+        <nav
+          className="footer-nav"
+          style={{
+            marginTop: '52px',
+            fontFamily: 'var(--font-exo2), sans-serif',
+            fontSize: '0.85rem',
+            opacity: 0,
+          }}
+          aria-label="Footer navigation"
+        >
+          {['Kursy', 'Instruktorzy', 'Cennik', 'Galeria', 'Kontakt'].map((item, i, arr) => (
+            <span key={item}>
+              <a className="footer-nav-link" href={`#${item.toLowerCase()}`}>
+                {item}
+              </a>
+              {i < arr.length - 1 && <span className="footer-nav-sep"> · </span>}
+            </span>
+          ))}
+        </nav>
+
+        {/* Social hexagons */}
+        <div
+          className="footer-hex-row"
+          style={{
+            marginTop: '52px',
+            display: 'flex',
+            gap: 'clamp(28px, 6vw, 80px)',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
+          {/* Facebook */}
+          <a
+            className="footer-hex"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook"
+            style={{ opacity: 0, transform: 'scale(0)', display: 'inline-block', lineHeight: 0 }}
+          >
+            <svg width="60" height="60" viewBox="-30 -30 60 60">
+              <polygon
+                points="26,0 13,22.5 -13,22.5 -26,0 -13,-22.5 13,-22.5"
+                fill="#FF6B35"
+                fillOpacity="0.06"
+                stroke="#FF6B35"
+                strokeOpacity="0.2"
+                strokeWidth="0.8"
+              />
+              <text
+                className="footer-hex-icon"
+                x="0"
+                y="7"
+                textAnchor="middle"
+                fontFamily="var(--font-exo2), sans-serif"
+                fontWeight="700"
+                fontSize="20"
+                fill="#FF6B35"
+                opacity="0.75"
+              >
+                f
+              </text>
+            </svg>
+          </a>
+
+          {/* Instagram */}
+          <a
+            className="footer-hex"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            style={{ opacity: 0, transform: 'scale(0)', display: 'inline-block', lineHeight: 0 }}
+          >
+            <svg width="60" height="60" viewBox="-30 -30 60 60">
+              <polygon
+                points="26,0 13,22.5 -13,22.5 -26,0 -13,-22.5 13,-22.5"
+                fill="#FF6B35"
+                fillOpacity="0.06"
+                stroke="#FF6B35"
+                strokeOpacity="0.2"
+                strokeWidth="0.8"
+              />
+              <g className="footer-hex-icon" opacity="0.75">
+                <rect x="-8" y="-8" width="16" height="16" rx="4" fill="none" stroke="#FF6B35" strokeWidth="1.5" />
+                <circle cx="0" cy="0" r="4" fill="none" stroke="#FF6B35" strokeWidth="1.5" />
+                <circle cx="5" cy="-5" r="0.9" fill="#FF6B35" />
+              </g>
+            </svg>
+          </a>
+
+          {/* YouTube */}
+          <a
+            className="footer-hex"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="YouTube"
+            style={{ opacity: 0, transform: 'scale(0)', display: 'inline-block', lineHeight: 0 }}
+          >
+            <svg width="60" height="60" viewBox="-30 -30 60 60">
+              <polygon
+                points="26,0 13,22.5 -13,22.5 -26,0 -13,-22.5 13,-22.5"
+                fill="#FF6B35"
+                fillOpacity="0.06"
+                stroke="#FF6B35"
+                strokeOpacity="0.2"
+                strokeWidth="0.8"
+              />
+              <path className="footer-hex-icon" d="M -5 -7 L 8 0 L -5 7 Z" fill="#FF6B35" opacity="0.75" />
+            </svg>
+          </a>
+
+          {/* TikTok (music note) */}
+          <a
+            className="footer-hex"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok"
+            style={{ opacity: 0, transform: 'scale(0)', display: 'inline-block', lineHeight: 0 }}
+          >
+            <svg width="60" height="60" viewBox="-30 -30 60 60">
+              <polygon
+                points="26,0 13,22.5 -13,22.5 -26,0 -13,-22.5 13,-22.5"
+                fill="#FF6B35"
+                fillOpacity="0.06"
+                stroke="#FF6B35"
+                strokeOpacity="0.2"
+                strokeWidth="0.8"
+              />
+              <g className="footer-hex-icon" opacity="0.75">
+                <circle cx="-3" cy="6" r="4" fill="#FF6B35" />
+                <rect x="0.4" y="-9" width="1.6" height="15" fill="#FF6B35" />
+                <path d="M 2 -9 Q 9 -7 6 -1" fill="none" stroke="#FF6B35" strokeWidth="1.6" strokeLinecap="round" />
+              </g>
+            </svg>
+          </a>
+        </div>
+
+        {/* Contact */}
+        <div className="footer-contact" style={{ marginTop: '52px', opacity: 0 }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-exo2), sans-serif',
+              fontSize: '0.75rem',
+              color: '#1A3A5C',
+              opacity: 0.35,
+              letterSpacing: '0.05em',
+            }}
+          >
+            ul. Stokowa 12, 34-500 Zakopane
+          </div>
+          <div
+            style={{
+              marginTop: '10px',
+              fontFamily: 'var(--font-exo2), sans-serif',
+              fontSize: '0.85rem',
+            }}
+          >
+            <a className="footer-contact-link" href="tel:+48123456789">
+              +48 123 456 789
+            </a>
+            <span style={{ color: '#FF6B35', opacity: 0.3, margin: '0 10px' }}>·</span>
+            <a className="footer-contact-link" href="mailto:kontakt@skimaster.pl">
+              kontakt@skimaster.pl
+            </a>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div
+          className="footer-copyright"
+          style={{ marginTop: '48px', width: '100%', maxWidth: '900px', opacity: 0 }}
+        >
+          <div
+            style={{
+              height: '1px',
+              background: '#1A3A5C',
+              opacity: 0.06,
+              marginBottom: '22px',
+              marginLeft: '60px',
+              marginRight: '60px',
+            }}
+          />
+          <div
+            style={{
+              fontFamily: 'var(--font-exo2), sans-serif',
+              fontSize: '0.65rem',
+              color: '#1A3A5C',
+              opacity: 0.25,
+              letterSpacing: '0.1em',
+            }}
+          >
+            © 2026 SkiMaster — Wszystkie prawa zastrzeżone
+          </div>
+        </div>
+      </div>
+    </footer>
     </>
   );
 }
