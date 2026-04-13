@@ -1586,24 +1586,6 @@ export default function Home() {
         border: 'none',
       }}
     >
-      {/* Mountain outline decoration */}
-      <svg
-        className="footer-mountains pointer-events-none"
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '32%', zIndex: 1 }}
-        viewBox="0 0 1200 200"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M0 180 L120 90 L200 140 L320 50 L440 130 L560 70 L700 120 L820 40 L940 100 L1060 60 L1200 150 L1200 200 L0 200 Z"
-          fill="#ffffff"
-          fillOpacity="0.02"
-          stroke="#1A3A5C"
-          strokeOpacity="0.08"
-          strokeWidth="0.5"
-        />
-      </svg>
-
       {/* Snowflake decorations */}
       <div
         className="footer-snowflakes pointer-events-none"
@@ -1884,7 +1866,7 @@ export default function Home() {
               letterSpacing: '0.1em',
             }}
           >
-            © 2026 SkiMaster — Wszystkie prawa zastrzeżone
+            © 2026 SkiMaster — Projektant: Jakub Sidor
           </div>
         </div>
       </div>
