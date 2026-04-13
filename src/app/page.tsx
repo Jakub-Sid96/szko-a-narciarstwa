@@ -1062,20 +1062,16 @@ export default function Home() {
       >
         {/* Logo */}
         <a className="nav-logo" href="#">
-          <svg
-            className="nav-logo-icon"
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#FF6B35"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2L2 22h20L12 2z" />
-            <path d="M7 14h10" />
-          </svg>
+          <span className="nav-logo-badge">
+            <img
+              className="nav-logo-icon"
+              src="/skimaster-logo.png"
+              alt="SkiMaster logo"
+              width={48}
+              height={48}
+              style={{ objectFit: 'contain' }}
+            />
+          </span>
           <span className="nav-logo-text">SKIMASTER</span>
         </a>
 
